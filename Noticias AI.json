@@ -1,0 +1,450 @@
+{
+  "name": "Noticias AI",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        64
+      ],
+      "id": "2c4753ee-bbf2-4e2b-a0ad-ae12435f882d",
+      "name": "Webhook",
+      "webhookId": "987d58b4-de13-4b59-97c7-07896d7835a8"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-oss-20b",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-OSS-20B"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Você é um especialista em IA.\nTarefa: Analise a notícia abaixo e resuma em Português.\n\nRegras Cruciais:\n\nResponda APENAS com o objeto JSON abaixo, sem qualquer outro texto ou explicações.\n\nNão use blocos de código (markdown). Envie o JSON puro, todas as strings devem estar entre \"\".\n\nClassifique apenas UMA dessas categorias: LLMs, Agentes de IA, Mercado/Negócios Ferramentas/Produtividade OU Open Source.\nRetorne SOMENTE uma dessas categorias, sem combinar ou inventar novas.\n\nNunca retorne mais que uma categoria.\n\nFormato de Resposta:\n{\n\"titulo\": \"Título traduzido e atraente\",\n\"resumo\": \"Resumo de uma frase em português\",\n\"categoria\": \"Categoria escolhida\",\n\"link\": \"{{ $json.link }}\",\n\"insight\": \"Por que isso é relevante para alunos de TI?\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "store": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        576,
+        144
+      ],
+      "id": "36bc5085-8d54-4137-82c4-6957e75bdba2",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "WD42PDx1qm79Vndl",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"titulo\": \"{{ $json.titulo }}\",\n  \"resumo\": \"{{ $json.resumo }}\",\n  \"categoria\": \"{{ $json.categoria }}\",\n  \"link\": \"{{ $json.link }}\",\n  \"insight\": \"{{ $json.insight }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1200,
+        96
+      ],
+      "id": "cd567ed0-865d-4359-b65c-a0178aabfd3e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        240
+      ],
+      "id": "37511bce-1a09-4f2a-9dcf-24f9bc7c9c3a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/tag/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        64
+      ],
+      "id": "0c10b400-81de-48dc-93bc-19ab9b40a4a0",
+      "name": "RSS Read - TechCrunch"
+    },
+    {
+      "parameters": {
+        "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        240
+      ],
+      "id": "fc431eee-e0ad-41c3-952a-1974446098f2",
+      "name": "RSS Read - MIT"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        192,
+        64
+      ],
+      "id": "e92c307d-94d1-49a7-9879-456b75ef7b05",
+      "name": "Limit - TechCrunch"
+    },
+    {
+      "parameters": {
+        "maxItems": 5
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        192,
+        240
+      ],
+      "id": "49356275-3c4a-4b37-a338-05abef788ed2",
+      "name": "Limit - MIT"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        384,
+        144
+      ],
+      "id": "5c349c76-5641-464f-a01d-84a9ea82070c",
+      "name": "Merge - Novas Pesquisas"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const texto = $json.output[0].content[0].text;\n\nreturn {\n  json: JSON.parse(texto)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        144
+      ],
+      "id": "3ea5c623-ed48-49b5-a644-651fa84dbc3d",
+      "name": "Formato Json Output"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appLg6gR6k4NwTlKQ",
+          "mode": "list",
+          "cachedResultName": "Case Liga IA - Notícias",
+          "cachedResultUrl": "https://airtable.com/appLg6gR6k4NwTlKQ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblqFjKylEANlTSwh",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/appLg6gR6k4NwTlKQ/tblqFjKylEANlTSwh"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $json.titulo }}",
+            "Resumo": "={{ $json.resumo }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Link": "={{ $json.link }}",
+            "Insight": "={{ $json.insight }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resumo",
+              "displayName": "Resumo",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "LLMs",
+                  "value": "LLMs"
+                },
+                {
+                  "name": " Agentes de IA",
+                  "value": " Agentes de IA"
+                },
+                {
+                  "name": "Mercado/Negócios",
+                  "value": "Mercado/Negócios"
+                },
+                {
+                  "name": "Ferramentas/Produtividade",
+                  "value": "Ferramentas/Produtividade"
+                },
+                {
+                  "name": "Open Source",
+                  "value": "Open Source"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Insight",
+              "displayName": "Insight",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1200,
+        224
+      ],
+      "id": "0af993de-6e1e-478d-8dad-88d60009f8ac",
+      "name": "Salva no Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "DeqEgqyiwVFu2Rb8",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "RSS Read - TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read - MIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Formato Json Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read - TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read - MIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read - TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Limit - TechCrunch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read - MIT": {
+      "main": [
+        [
+          {
+            "node": "Limit - MIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Limit - TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Merge - Novas Pesquisas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit - MIT": {
+      "main": [
+        [
+          {
+            "node": "Merge - Novas Pesquisas",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge - Novas Pesquisas": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato Json Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Salva no Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salva no Airtable": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5f288582-7ab8-4bcf-86d9-0e467dbcc2a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "67be8a859affbab9fbdc2e31facec7b10f0315492874ba567a813728d5f5daff"
+  },
+  "id": "Z9lE3nSZ2XbynOmn",
+  "tags": []
+}
