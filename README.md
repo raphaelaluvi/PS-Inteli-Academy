@@ -46,6 +46,9 @@ Retorno via Webhook para consumo externo
 
 *Dashboard*
 
+Entrar com email do inteli; link do dashboard: https://airtable.com/invite/l?inviteId=invk1bZq9kav50u0I&inviteToken=8fad0f236013f84de51b7b370dd6ae9a94838f5c4d435f65f314271680bba40f&utm_medium=email&utm_source=product_team&utm_content=transactional-alerts
+
+
 Os dados são apresentados em um dashboard interativo no Airtable, permitindo:
 
 Visualização das notícias organizadas;
